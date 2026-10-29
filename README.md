@@ -1,4 +1,4 @@
-# Nuvio Morphe patches (personal, experimental)
+# Nuvio Morphe patches (experimental)
 
 Morphe patch bundle for the **official Nuvio Android app** (`com.nuvio.app`).
 Written against **0.6.5-beta (versionCode 148, arm64-v8a)**. Marked **experimental** and targets **any version**.
@@ -16,10 +16,11 @@ How it finds its targets (so it can survive updates): it locates the obfuscated 
 text of its `toString()` and rewrites every place that builds it. The P2P engine classes keep their
 real names in Nuvio releases, so the helper reaches them by reflection.
 
-Not included yet: automatically launching the external player when a P2P stream starts.
+Inpired by @neon16bit commit - https://github.com/NuvioMedia/NuvioMobile/commit/70a27a1268c0a86921270ffa0abf2d118705b622
 
 ### Material You theme
-Adds a **Material** theme to Settings > Layout > Theme, like the upstream "Add Material You theme" commit.
+Adds a **Material** theme to Settings > Layout > Theme.
+
 On Android 12+ the accent and background colors follow your wallpaper (Material You). On older Android
 it uses a fixed purple Material palette. It is saved and restored like every other theme.
 The chip appears at the end of the theme list (the app builds that list from its theme enum order).
@@ -28,12 +29,14 @@ How it works: it appends a `MATERIAL` value to the theme enum (found by its cons
 Material You palette from the palette function for that value, and handles the theme picker's switch so
 the new value cannot crash it. All targets are found by strings and structure, not by obfuscated names.
 
+Inspired by my commit - https://github.com/NuvioMedia/NuvioMobile/commit/d5179255b686a1c4c765488631552ba0310c74c4
+
 ## Build without installing anything (GitHub Actions)
 
-1. Push this folder to a new GitHub repository (private is fine).
-2. Open the repository's **Actions** tab. The "Build patches" workflow runs on every push
+
+1. Open the repository's **Actions** tab. The "Build patches" workflow runs on every push
    (or choose it and press **Run workflow**).
-3. When it finishes, open the run and download the `nuvio-patches-mpp` artifact.
+2. When it finishes, open the run and download the `nuvio-patches-mpp` artifact.
    Unzip it to get `patches-1.0.0.mpp`.
 
 ## Build locally
@@ -69,4 +72,4 @@ The patch throws a clear message instead of guessing:
 
 You can turn a patch off in Morphe Manager if only one of them fails.
 
-Send the full log and the Nuvio version.
+Report the issue along with the log
