@@ -1,0 +1,38 @@
+name: Build patches
+
+on:
+  workflow_dispatch:
+  push:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    name: Build .mpp
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build patches
+        env:
+          # Gives Gradle read access to Morphe's plugin on GitHub Packages.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :patches:buildAndroid --no-daemon
+
+      - name: Upload .mpp
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuvio-patches-mpp
+          path: patches/build/libs/*.mpp
+          if-no-files-found: error

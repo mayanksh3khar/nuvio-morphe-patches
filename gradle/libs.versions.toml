@@ -1,0 +1,7 @@
+[versions]
+morphe-patcher = "2.0.0"
+
+[libraries]
+# Gradle plugin adds the dependency during build, this declaration is here only for reference.
+#noinspection UnusedVersionCatalogEntry
+morphe-patcher = { module = "app.morphe:morphe-patcher", version.ref = "morphe-patcher" }
