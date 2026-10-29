@@ -2,6 +2,7 @@
 
 Morphe patch bundle for the **official Nuvio Android app** (`com.nuvio.app`).
 Written against **0.6.5-beta (versionCode 148, arm64-v8a)**. Marked **experimental** and targets **any version**.
+Both patches are enabled by default.
 
 ## Patches
 
@@ -16,6 +17,16 @@ text of its `toString()` and rewrites every place that builds it. The P2P engine
 real names in Nuvio releases, so the helper reaches them by reflection.
 
 Not included yet: automatically launching the external player when a P2P stream starts.
+
+### Material You theme
+Adds a **Material** theme to Settings > Layout > Theme, like the upstream "Add Material You theme" commit.
+On Android 12+ the accent and background colors follow your wallpaper (Material You). On older Android
+it uses a fixed purple Material palette. It is saved and restored like every other theme.
+The chip appears at the end of the theme list (the app builds that list from its theme enum order).
+
+How it works: it appends a `MATERIAL` value to the theme enum (found by its constant names), returns a
+Material You palette from the palette function for that value, and handles the theme picker's switch so
+the new value cannot crash it. All targets are found by strings and structure, not by obfuscated names.
 
 ## Build without installing anything (GitHub Actions)
 
@@ -53,5 +64,9 @@ token with `read:packages` (Morphe's Gradle plugin is hosted on GitHub Packages)
 The patch throws a clear message instead of guessing:
 - `Expected exactly 1 class containing "ExternalPlayerPlaybackRequest(sourceUrl="`: the request class changed.
 - `Found the request class (...) but no place that creates it`: Nuvio changed how requests are built.
+- `Expected exactly 1 theme enum containing ...`: the theme enum changed.
+- `Expected to patch 1 palette function and 1 theme chip ...`: Nuvio changed how themes are switched.
+
+You can turn a patch off in Morphe Manager if only one of them fails.
 
 Send the full log and the Nuvio version.
