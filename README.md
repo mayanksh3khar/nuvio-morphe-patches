@@ -1,7 +1,7 @@
 # Nuvio Morphe patches (experimental)
 
 Morphe patch bundle for the **official Nuvio Android app** (`com.nuvio.app`).
-Written against **0.6.5-beta (versionCode 148, arm64-v8a)**. Marked **experimental** and targets **any version**.
+Written against **0.6.5-beta**, verified on **0.6.6-beta** (arm64-v8a). Marked **experimental** and targets **any version**.
 Both patches are enabled by default.
 
 ## Patches

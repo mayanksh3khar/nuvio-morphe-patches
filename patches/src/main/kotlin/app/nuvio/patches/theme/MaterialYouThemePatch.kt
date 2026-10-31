@@ -193,21 +193,33 @@ val materialYouThemePatch = bytecodePatch(
                 )
 
                 // ... and the label string produced after the switch is replaced with "Material".
-                // That label is the first static call after the switch that takes two arguments
-                // and returns a String (the string resource lookup).
-                var stringCallIndex = -1
-                for (i in switchIndex + 1 until impl.instructions.size) {
-                    val instruction = impl.instructions[i]
-                    if (instruction.opcode != Opcode.INVOKE_STATIC && instruction.opcode != Opcode.INVOKE_STATIC_RANGE) {
-                        continue
+                // The label is the result of the first static call after the switch that returns a
+                // String and takes at least 2 arguments (the string resource lookup). Its exact
+                // signature changes between releases (2 args in 0.6.5, 3 in 0.6.6), so only the
+                // return type and a minimum argument count are matched. If that is not found, fall
+                // back to the first call of any kind after the switch that returns a String.
+                fun findStringCall(strict: Boolean): Int {
+                    for (i in switchIndex + 1 until impl.instructions.size) {
+                        val instruction = impl.instructions[i]
+                        val isStatic = instruction.opcode == Opcode.INVOKE_STATIC ||
+                            instruction.opcode == Opcode.INVOKE_STATIC_RANGE
+                        val isCall = isStatic ||
+                            instruction.opcode == Opcode.INVOKE_VIRTUAL ||
+                            instruction.opcode == Opcode.INVOKE_VIRTUAL_RANGE ||
+                            instruction.opcode == Opcode.INVOKE_INTERFACE ||
+                            instruction.opcode == Opcode.INVOKE_INTERFACE_RANGE
+                        if (!isCall || (strict && !isStatic)) continue
+                        val reference = instruction.getReference<MethodReference>() ?: continue
+                        if (reference.returnType != "Ljava/lang/String;") continue
+                        if (strict && reference.parameterTypes.size < 2) continue
+                        if (i + 1 < impl.instructions.size &&
+                            impl.instructions[i + 1].opcode == Opcode.MOVE_RESULT_OBJECT
+                        ) return i
                     }
-                    val reference = instruction.getReference<MethodReference>() ?: continue
-                    if (reference.returnType == "Ljava/lang/String;" && reference.parameterTypes.size == 2) {
-                        stringCallIndex = i
-                        break
-                    }
+                    return -1
                 }
-                if (stringCallIndex < 0 || impl.instructions[stringCallIndex + 1].opcode != Opcode.MOVE_RESULT_OBJECT) {
+                val stringCallIndex = findStringCall(strict = true).takeIf { it >= 0 } ?: findStringCall(strict = false)
+                if (stringCallIndex < 0) {
                     throw PatchException("Could not find the theme label lookup in $definingClass->$name.")
                 }
                 val labelRegister = (impl.instructions[stringCallIndex + 1] as OneRegisterInstruction).registerA
